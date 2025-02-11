@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import time
 import xlsxwriter
+import io
 
 st.set_page_config(layout="wide")
 
@@ -77,6 +78,11 @@ def main():
 				pd.DataFrame(st.session_state["guesses"]).to_excel(writer, index=False, sheet_name='Guesses')
 				writer.close()
 				st.download_button(label="Download Results as Excel", data=buffer.getvalue(), file_name="guesses.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+			if st.button("Reset Count"):
+				st.session_state["guesses"] = []
+				st.session_state["i"] = 0
+				t.text(f"Aantal deelnemers tot nu toe: {st.session_state['i']}")
+				st.success("All guesses have been reset!")
 
 if __name__ == "__main__":
 	main()
