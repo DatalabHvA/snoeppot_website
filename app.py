@@ -1,21 +1,30 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+from datetime import datetime
 import time
 import xlsxwriter
 import io
+import os
 
 st.set_page_config(layout="wide")
 
 # Streamlit app
 def main():
 	
+	if "file" not in st.session_state: 
+		st.session_state['file'] = datetime.today().strftime('%Y-%m-%d')
+
+	if "guesses" not in st.session_state and os.path.isfile(f"{st.session_state['file']}.xlsx"):
+		st.session_state['guesses'] = pd.read_excel(f"{st.session_state['file']}.xlsx")
+
+	if "guesses" not in st.session_state and not os.path.isfile(f"{st.session_state['file']}.xlsx"):
+		pd.DataFrame(columns = ['E-mailadres','Schatting']).to_excel(f"{st.session_state['file']}.xlsx", index = False)
+		st.session_state['guesses'] = pd.read_excel(f"{st.session_state['file']}.xlsx")
+
 	if "i" not in st.session_state: 
-		st.session_state['i'] = 0
-     
-	if "guesses" not in st.session_state:	
-		st.session_state["guesses"] = []
-	
+		st.session_state['i'] = len(st.session_state['guesses'])
+
 	st.title("Raad het aantal snoepjes in de pot")
 	st.write("Voer je schatting en e-mailadres in om mee te doen!")
 	t = st.empty()
@@ -32,10 +41,11 @@ def main():
 	if submit:
 		if email and guess is not None:
 			# Add guess to in-memory storage
-			st.session_state['i']+=1
 			with col1:
+				pd.concat([st.session_state['guesses'],pd.DataFrame({"E-mailadres": email, "Schatting": int(guess)}, index = [0])], ignore_index = True).to_excel(f"{st.session_state['file']}.xlsx", index = False)
+				st.session_state['guesses'] = pd.read_excel(f"{st.session_state['file']}.xlsx")
+				st.session_state['i'] = len(st.session_state['guesses'])
 				t.text(f"Aantal deelnemers tot nu toe: {st.session_state['i']}")
-				st.session_state["guesses"].append({"E-mailadres": email, "Schatting": int(guess)})
 				st.success("Bedankt voor je inzending!")
             
 			with col2:
@@ -70,6 +80,8 @@ def main():
 		st.markdown('#')
 		st.markdown('#')
 		st.markdown('#')
+		st.markdown('#')
+		st.markdown('#')
 		# Secret download section
 		toegang = st.text_input("Enter admin password to download results:", type="password")
 		if toegang == "admin1234":
@@ -79,8 +91,9 @@ def main():
 				writer.close()
 				st.download_button(label="Download Results as Excel", data=buffer.getvalue(), file_name="guesses.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 			if st.button("Reset Count"):
-				st.session_state["guesses"] = []
-				st.session_state["i"] = 0
+				pd.DataFrame(columns = ['E-mailadres','Schatting']).to_excel(f"{st.session_state['file']}.xlsx", index = False)
+				st.session_state['guesses'] = pd.read_excel(f"{st.session_state['file']}.xlsx")
+				st.session_state["i"] = len(st.session_state['guesses'])
 				t.text(f"Aantal deelnemers tot nu toe: {st.session_state['i']}")
 				st.success("All guesses have been reset!")
 
