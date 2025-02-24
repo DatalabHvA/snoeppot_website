@@ -35,7 +35,7 @@ def main():
 	with col1:
 		with st.form(key="guess_form", clear_on_submit=True):
 			email = st.text_input("E-mailadres")
-			guess = st.number_input("Je schatting van het aantal knikkers", min_value=0, step=1)
+			guess = st.number_input("Je schatting van het aantal snoepjes", min_value=0, step=1)
 			submit = st.form_submit_button("Verstuur")
 
 	if submit:
